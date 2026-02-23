@@ -25,7 +25,16 @@ class SimplicialComplexOperators {
          * @param {module:Core.Mesh} mesh The input mesh which we index.
          */
         assignElementIndices(mesh) {
-                // TODO
+                for (let i=0; i<mesh.vertices.length; i++) {
+                        let v = mesh.vertices[i];
+                        v.index = i;
+                }
+                for (let i=0; i<mesh.edges.length; i++) {
+                        mesh.edges[i].index = i;
+                }
+                for (let i=0; i<mesh.faces.length; i++) {
+                        mesh.faces[i].index = i;
+                }
         }
 
         /** Returns the vertex-edge adjacency matrix of the given mesh.
@@ -34,16 +43,49 @@ class SimplicialComplexOperators {
          * @returns {module:LinearAlgebra.SparseMatrix} The vertex-edge adjacency matrix of the given mesh.
          */
         buildVertexEdgeAdjacencyMatrix(mesh) {
-                // TODO
-        }
 
+                let n_v = mesh.vertices.length;
+                let n_e = mesh.edges.length;
+                let t_edges = new Triplet(n_e, n_v);
+                
+                for (let i=0; i<n_e; i++) {
+                        let e = mesh.edges[i];
+                        let e_ind = e.index;
+                        let v_source = e.halfedge.vertex.index;
+                        let v_dest = e.halfedge.twin.vertex.index;
+                        t_edges.addEntry(1, e_ind, v_source);
+                        t_edges.addEntry(1, e_ind, v_dest);
+                }
+
+                let A0 = SparseMatrix.fromTriplet(t_edges);
+
+                return A0;
+        }
+                
         /** Returns the edge-face adjacency matrix.
-         * @method module:Projects.SimplicialComplexOperators#buildEdgeFaceAdjacencyMatrix
          * @param {module:Core.Mesh} mesh The mesh whose adjacency matrix we compute.
          * @returns {module:LinearAlgebra.SparseMatrix} The edge-face adjacency matrix of the given mesh.
          */
         buildEdgeFaceAdjacencyMatrix(mesh) {
-                // TODO
+
+                let n_e = mesh.edges.length;
+                let n_f = mesh.faces.length;
+                let t_faces = new Triplet(n_f, n_e);
+                
+                for (let i=0; i<n_f; i++) {
+                        let f = mesh.faces[i];
+                        let f_ind = f.index;
+                        let e_1 = f.halfedge.edge.index;
+                        let e_2 = f.halfedge.next.edge.index;
+                        let e_3 = f.halfedge.next.next.edge.index;
+                        t_faces.addEntry(1, f_ind, e_1);
+                        t_faces.addEntry(1, f_ind, e_2);
+                        t_faces.addEntry(1, f_ind, e_3);
+                }
+
+                let A1 = SparseMatrix.fromTriplet(t_faces);
+
+                return A1;
         }
 
         /** Returns a column vector representing the vertices of the
