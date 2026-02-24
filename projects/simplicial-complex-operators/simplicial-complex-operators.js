@@ -148,7 +148,7 @@ class SimplicialComplexOperators {
          * @returns {module:Core.MeshSubset} The star of the given subset.
          */
         star(subset) {
-                /**
+                /*
                 Star of a mesh contains its own simplices (i.e. all vertices, edges, faces) and 
                 all of the simplices that contain any of these simplices.
                 
@@ -159,9 +159,7 @@ class SimplicialComplexOperators {
 
                 reference - Gemini answer:
                 https://gemini.google.com/share/f0fcc821c5ef
-                **/
-                
-                debugger;
+                */
                 
                 let vertices_vector = this.buildVertexVector(subset);
                 let edges_vector = this.buildEdgeVector(subset);
@@ -172,21 +170,21 @@ class SimplicialComplexOperators {
                 let f_star = faces_vector.plus(this.A1.timesDense(e_star));
 
                 let v_star_set = new Set();
-                for (let i=0; i<this.mesh.vertices.length; i++) {
+                for (let i=0; i<vertices_vector.nRows(); i++) {
                         if (v_star.get(i, 0) > 0) {
                                 v_star_set.add(i);
                         }
                 }
                 
                 let e_star_set = new Set();
-                for (let i=0; i<this.mesh.edges.length; i++) {
+                for (let i=0; i<edges_vector.nRows(); i++) {
                         if (e_star.get(i, 0) > 0) {
                                 e_star_set.add(i);
                         }
                 }
                 
                 let f_star_set = new Set();
-                for (let i=0; i<this.mesh.faces.length; i++) {
+                for (let i=0; i<faces_vector.nRows(); i++) {
                         if (f_star.get(i, 0) > 0) {
                                 f_star_set.add(i);
                         }
@@ -204,9 +202,37 @@ class SimplicialComplexOperators {
          * @returns {module:Core.MeshSubset} The closure of the given subset.
          */
         closure(subset) {
-                // TODO
+                /*
+                function logic:
+                        - loop over all faces and add all edges 
+                        - loop over all edges (include those who were just added) and add all vertices
+                */
 
-                return subset; // placeholder
+                let edges_vector = this.buildEdgeVector(subset);
+                let faces_vector = this.buildFaceVector(subset);
+             
+                let e_closure = edges_vector.plus(this.A1.transpose().timesDense(faces_vector));
+                
+                let e_closure_set = new Set();
+                for (let i=0; i<e_closure.nRows(); i++) {
+                        if (e_closure.get(i, 0) > 0) {
+                                e_closure_set.add(i);
+                        }
+                }
+
+                let vertices_vector = this.buildVertexVector(subset);
+                let v_closure = vertices_vector.plus(this.A0.transpose().timesDense(e_closure));
+
+                let v_closure_set = new Set();
+                for (let i=0; i<v_closure.nRows(); i++) {
+                        if (v_closure.get(i, 0) > 0) {
+                                v_closure_set.add(i);
+                        }
+                }
+                
+                let closure = new MeshSubset(v_closure_set, e_closure_set, subset.faces);
+                
+                return closure;
         }
 
         /** Returns the link of a subset.
@@ -216,6 +242,8 @@ class SimplicialComplexOperators {
          */
         link(subset) {
                 // TODO
+
+                debugger;
 
                 return subset; // placeholder
         }
