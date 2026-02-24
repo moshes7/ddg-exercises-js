@@ -241,11 +241,12 @@ class SimplicialComplexOperators {
          * @returns {module:Core.MeshSubset} The link of the given subset.
          */
         link(subset) {
-                // TODO
 
-                debugger;
+                let link = new MeshSubset
+                link = this.closure(this.star(subset))
+                link.deleteSubset(this.star(this.closure(subset)))  // inplace
 
-                return subset; // placeholder
+                return link;
         }
 
         /** Returns true if the given subset is a subcomplex and false otherwise.
