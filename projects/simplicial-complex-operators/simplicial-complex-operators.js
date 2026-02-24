@@ -96,7 +96,14 @@ class SimplicialComplexOperators {
          *  vertex i is in the given subset and 0 otherwise
          */
         buildVertexVector(subset) {
-                // TODO
+
+                let V = this.mesh.vertices.length;
+                let vec = DenseMatrix.zeros(V, 1);
+                for (let val of subset.vertices) {
+                        vec.set(1, val, 0);
+                }
+
+                return vec;
         }
 
         /** Returns a column vector representing the edges of the
@@ -107,7 +114,14 @@ class SimplicialComplexOperators {
          *  edge i is in the given subset and 0 otherwise
          */
         buildEdgeVector(subset) {
-                // TODO
+                
+                let E = this.mesh.edges.length;
+                let vec = DenseMatrix.zeros(E, 1);
+                for (let val of subset.edges) {
+                        vec.set(1, val, 0);
+                }
+
+                return vec;
         }
 
         /** Returns a column vector representing the faces of the
@@ -118,7 +132,14 @@ class SimplicialComplexOperators {
          *  face i is in the given subset and 0 otherwise
          */
         buildFaceVector(subset) {
-                // TODO
+
+                let F = this.mesh.faces.length;
+                let vec = DenseMatrix.zeros(F, 1);
+                for (let val of subset.faces) {
+                        vec.set(1, val, 0);
+                }
+
+                return vec;
         }
 
         /** Returns the star of a subset.
@@ -127,9 +148,54 @@ class SimplicialComplexOperators {
          * @returns {module:Core.MeshSubset} The star of the given subset.
          */
         star(subset) {
-                // TODO
+                /**
+                Star of a mesh contains its own simplices (i.e. all vertices, edges, faces) and 
+                all of the simplices that contain any of these simplices.
+                
+                We can use the adjaceny metrices in order to get all the needed simplices.
+                        vertices_vector will give all the input vertices.
+                        edges_vector + A0 @ vertices_vector will give all the edges that contain any of the vertices
+                        faces_vector + A1 @ edges_vector + A1 @ A0 @ vertices_vector will give all the faces that contain any of the vertices or edges
 
-                return subset; // placeholder
+                reference - Gemini answer:
+                https://gemini.google.com/share/f0fcc821c5ef
+                **/
+                
+                debugger;
+                
+                let vertices_vector = this.buildVertexVector(subset);
+                let edges_vector = this.buildEdgeVector(subset);
+                let faces_vector = this.buildFaceVector(subset);
+
+                let v_star = vertices_vector;
+                let e_star = edges_vector.plus(this.A0.timesDense(vertices_vector));
+                let f_star = faces_vector.plus(this.A1.timesDense(e_star));
+
+                let v_star_set = new Set();
+                for (let i=0; i<this.mesh.vertices.length; i++) {
+                        if (v_star.get(i, 0) > 0) {
+                                v_star_set.add(i);
+                        }
+                }
+                
+                let e_star_set = new Set();
+                for (let i=0; i<this.mesh.edges.length; i++) {
+                        if (e_star.get(i, 0) > 0) {
+                                e_star_set.add(i);
+                        }
+                }
+                
+                let f_star_set = new Set();
+                for (let i=0; i<this.mesh.faces.length; i++) {
+                        if (f_star.get(i, 0) > 0) {
+                                f_star_set.add(i);
+                        }
+                }
+
+                let star = new MeshSubset(v_star_set, e_star_set, f_star_set);
+                
+                
+                return star;
         }
 
         /** Returns the closure of a subset.
