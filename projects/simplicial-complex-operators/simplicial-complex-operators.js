@@ -255,16 +255,69 @@ class SimplicialComplexOperators {
          * @returns {boolean} True if the given subset is a subcomplex and false otherwise.
          */
         isComplex(subset) {
-                // TODO
+
+                let subset_copy = new MeshSubset(new Set(subset.vertices), new Set(subset.edges), new Set(subset.faces));  // make a copy since deleteSubset() deletes faces from input subset
+                let closure = new MeshSubset
+                closure = this.closure(subset_copy)
+                closure.deleteSubset(subset_copy)  // inplace
+
+                let is_complex = (closure.vertices.size == 0) && (closure.edges.size == 0) && (closure.faces.size == 0);
+                return is_complex;
         }
 
         /** Returns the degree if the given subset is a pure subcomplex and -1 otherwise.
          * @method module:Projects.SimplicialComplexOperators#isPureComplex
-         * @param {module:Core.MeshSubset} subset A subset of our mesh.
+         * @param {module:C. re.MeshSubset} subset A subset of our mesh.
          * @returns {number} The degree of the given subset if it is a pure subcomplex and -1 otherwise.
          */
         isPureComplex(subset) {
-                // TODO
+                /* chapter 2.1 from the notes
+                A complex K is a pure k-simplicial complex if every simplex σ ∈ K is contained in some simplex of degree k (possibly itself). 
+                For instance, a bunch of triangles with edges and vertices hanging off the side or floating around by themselves is not pure.
+                */
+
+                if (!this.isComplex(subset)) {
+                        return -1;
+                }
+
+
+                if (subset.faces.size > 0) {
+                        
+                        let faces_vector = this.buildFaceVector(subset);
+                        let vertices_of_faces = this.A0.transpose().timesDense(this.A1.transpose().timesDense(faces_vector))
+                        let vertices_vector = this.buildVertexVector(subset)
+                     // compare vectors
+                        for (let i=0; i<vertices_of_faces.nRows(); i++) {
+                                let flag = ((vertices_of_faces.get(i, 0) > 0) && (vertices_vector.get(i, 0) > 0)) || ((vertices_of_faces.get(i, 0) == 0) && (vertices_vector.get(i, 0) == 0));
+                                if (!flag) {
+                                        return -1;
+                                }
+                        }
+                        
+                        return 2;
+           
+                        
+                } else if (subset.edges.size > 0) {
+                        
+                        let edges_vector = this.buildEdgeVector(subset);
+                        let vertices_of_edges = this.A0.transpose().timesDense(edges_vector)
+                        let vertices_vector = this.buildVertexVector(subset)
+                        // compare vectors
+                        for (let i=0; i<vertices_of_edges.nRows(); i++) {
+                                let flag = ((vertices_of_edges.get(i, 0) > 0) && (vertices_vector.get(i, 0) > 0)) || ((vertices_of_edges.get(i, 0) == 0) && (vertices_vector.get(i, 0) == 0));
+                                if (!flag) {
+                                        return -1;
+                                }
+                        }
+                        
+                        return 1;
+                        
+                } else if (subset.vertices.size > 0) { 
+                        // only edges - they are always pure complex
+                        return 0;
+                }
+                
+                return -1;
         }
 
         /** Returns the boundary of a subset.
