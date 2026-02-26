@@ -326,8 +326,51 @@ class SimplicialComplexOperators {
          * @returns {module:Core.MeshSubset} The boundary of the given pure subcomplex.
          */
         boundary(subset) {
-                // TODO
+                /*
+                The boundary is the closure of the set of all simplices σ that are proper faces of exactly one simplex of K′.
+                This means that we need to calculate the closure, then find all the proper faces on it.
+                */
 
-                return subset; // placeholder
+                let boundary = new MeshSubset;
+
+                let is_pure = this.isPureComplex(subset);
+                if (is_pure < 1) {
+                        return boundary;
+                }
+
+                let closure = this.closure(subset);
+
+                if (is_pure == 1) { // boundary is compirsed of vertices
+
+                        let edges_vector = this.buildEdgeVector(closure);
+                        let vetrices_on_boundary = this.A0.transpose().timesDense(edges_vector);
+                        for (let i=0; i<subset.vertices.size; i++) {
+                                let verex_ind = [...subset.vertices][i];
+                                if (vetrices_on_boundary.get(verex_ind, 0) == 1) {
+                                        boundary.addVertex(verex_ind);
+                                }
+                        }
+                }
+
+                if (is_pure == 2) {  // boundary is comprised from edges and vertices
+
+                        // treat edges                        
+                        let faces_vector = this.buildFaceVector(closure);
+                        let edges_on_boundary = this.A1.transpose().timesDense(faces_vector);
+                        for (let i=0; i<subset.edges.size; i++) {
+                                let edge_ind = [...subset.edges][i];
+                                if (edges_on_boundary.get(edge_ind, 0) == 1) {
+                                        boundary.addEdge(edge_ind);
+                                }
+                        }
+
+                        // treat vertices - add all vertices that belong to edges_on_boundary                        
+                        let vertices_on_boundary = this.A0.transpose().timesDense(edges_on_boundary);
+                        for (let i=0; i<subset.vertices.size; i++) {
+                                let vertex_ind = [...subset.vertices][i];
+                                boundary.addVertex(vertex_ind);
+                        }
+                }
+                return boundary;
         }
 }
