@@ -200,6 +200,8 @@ class Geometry {
 	 */
 	cotan(h) {
 
+		if (h.onBoundary) return 0.0;
+
 		let u = this.vector(h.next);
 		let v = this.vector(h.next.next);
 
