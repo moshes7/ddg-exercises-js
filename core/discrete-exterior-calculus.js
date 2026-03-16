@@ -42,10 +42,12 @@ class DEC {
 
 		let E = geometry.mesh.edges.length;
 		let T = new Triplet(E, E);
-		let e, l_dual_over_l_primal;
+		let e, l_dual_over_l_primal, h1, h2;
 
 		for (let i=0; i<E; i++) {
 			e = geometry.mesh.edges[i];
+			h1 = e.halfedge;
+			h2 = h1.twin;
 			l_dual_over_l_primal = 0.5 * (geometry.cotan(e.halfedge) + geometry.cotan(e.halfedge.twin));
 			T.addEntry(l_dual_over_l_primal, i, i);
 		}

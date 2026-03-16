@@ -202,10 +202,12 @@ class Geometry {
 
 		if (h.onBoundary) return 0.0;
 
-		let u = this.vector(h.next);
-		let v = this.vector(h.next.next);
+		// the vectors should both point away from that vertex (or both toward it)
+		let u = this.vector(h.next);      // v_j to v_k
+		let v = this.vector(h.next.next); // v_k to v_i
+		let neg_u = u.negated();          // v_k to v_j
 
-		let cot = u.dot(v) / (u.cross(v)).norm();
+		let cot = neg_u.dot(v) / (neg_u.cross(v)).norm();
 
 		return cot;
 	}
