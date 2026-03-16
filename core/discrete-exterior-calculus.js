@@ -42,12 +42,10 @@ class DEC {
 
 		let E = geometry.mesh.edges.length;
 		let T = new Triplet(E, E);
-		let e, l_dual_over_l_primal, h1, h2;
+		let e, l_dual_over_l_primal;
 
 		for (let i=0; i<E; i++) {
 			e = geometry.mesh.edges[i];
-			h1 = e.halfedge;
-			h2 = h1.twin;
 			l_dual_over_l_primal = 0.5 * (geometry.cotan(e.halfedge) + geometry.cotan(e.halfedge.twin));
 			T.addEntry(l_dual_over_l_primal, i, i);
 		}
@@ -90,9 +88,20 @@ class DEC {
 	 * @returns {module:LinearAlgebra.SparseMatrix}
 	 */
 	static buildExteriorDerivative0Form(geometry, edgeIndex, vertexIndex) {
-		// TODO
+		let V = geometry.mesh.vertices.length;
+		let E = geometry.mesh.edges.length;
+		let T = new Triplet(E, V);
+		let h, v_source, v_target;
 
-		return SparseMatrix.identity(1, 1); // placeholder
+		for (let i=0; i<E; i++) {
+			h = geometry.mesh.edges[i].halfedge; 
+			v_source = h.vertex.index;
+			v_target = h.twin.vertex.index;
+			T.addEntry(1, i, v_target);
+			T.addEntry(-1, i, v_source);
+		}
+
+		return SparseMatrix.fromTriplet(T); // placeholder
 	}
 
 	/**
