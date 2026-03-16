@@ -199,9 +199,13 @@ class Geometry {
 	 * @returns {number}
 	 */
 	cotan(h) {
-		// TODO
 
-		return 0.0; // placeholder
+		let u = this.vector(h.next);
+		let v = this.vector(h.next.next);
+
+		let cot = u.dot(v) / (u.cross(v)).norm();
+
+		return cot;
 	}
 
 	/**
@@ -224,9 +228,16 @@ class Geometry {
 	 * @returns {number}
 	 */
 	barycentricDualArea(v) {
-		// TODO
 
-		return 0.0; // placeholder
+		let A = 0.0;
+
+		for (let f of v.adjacentFaces()) {
+			A += this.area(f);
+		}
+
+		let A_dual = A / 3.;
+
+		return A_dual; // placeholder
 	}
 
 	/**

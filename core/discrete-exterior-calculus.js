@@ -14,9 +14,21 @@ class DEC {
 	 * @returns {module:LinearAlgebra.SparseMatrix}
 	 */
 	static buildHodgeStar0Form(geometry, vertexIndex) {
-		// TODO
 
-		return SparseMatrix.identity(1, 1); // placeholder
+		let n_v = geometry.mesh.vertices.length;
+		let T = new Triplet(n_v, n_v);
+		let i_v, v, A_dual;
+		
+		for (let i=0; i<n_v; i++) {
+			i_v = vertexIndex[i];
+			v = geometry.mesh.vertices[i_v];
+			A_dual = geometry.barycentricDualArea(v);
+			T.addEntry(A_dual, i_v, i_v); 
+		}
+
+		let hodge0Form = SparseMatrix.fromTriplet(T);
+		
+		return hodge0Form;
 	}
 
 	/**
