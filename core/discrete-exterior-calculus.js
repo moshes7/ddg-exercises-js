@@ -113,8 +113,29 @@ class DEC {
 	 * @returns {module:LinearAlgebra.SparseMatrix}
 	 */
 	static buildExteriorDerivative1Form(geometry, faceIndex, edgeIndex) {
-		// TODO
 
-		return SparseMatrix.identity(1, 1); // placeholder
+		let E = geometry.mesh.edges.length;
+		let F = geometry.mesh.faces.length;
+		let T = new Triplet(F, E);
+		let f, e, orientation;
+
+		for (let i=0; i<F; i++) {
+
+			f = geometry.mesh.faces[i];
+
+			for (let h of f.adjacentHalfedges()) {
+
+				e = geometry.mesh.edges[edgeIndex[h.edge.index]];
+				if (h == e.halfedge) {  // check if current edge is the "primary" or twin edge of the halfedge
+					orientation = 1;
+				} else {
+					orientation = -1;
+				}
+
+			T.addEntry(orientation, f.index, e.index);
+			}
+		}
+
+		return SparseMatrix.fromTriplet(T);
 	}
 }
